@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Team Composition Guide - Editable</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root {
+  --bg: #0f0f17; --bg2: #13131f; --border: rgba(255,255,255,0.07);
+  --text: #dde0f0; --dim: #6b6f8f; --gold: #f5c842; --cyan: #00d4ff;
+  --green: #00e87a; --red: #ff3355; --orange: #ff8c42; --blue: #00d4ff;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-serif; font-size:15px; line-height:1.5; }
+.top-bar { background:rgba(255,40,60,0.09); border-bottom:1px solid rgba(255,40,60,0.28); padding:12px 24px; text-align:center; }
+.main-header h1 { font-family:'Orbitron',sans-serif; font-size:2.2rem; color:var(--gold); text-align:center; padding:30px 0; }
+.section-label { text-align:center; padding:30px 0 15px; font-size:0.9rem; letter-spacing:3px; color:var(--dim); }
+.core-grid, .new-grid { display:grid; gap:18px; max-width:1280px; margin:0 auto; padding:0 20px; }
+.core-grid { grid-template-columns:repeat(4,1fr); }
+.new-grid { grid-template-columns:repeat(2,1fr); }
+.team-card {
+  border:1px solid var(--border); background:var(--bg2); border-radius:12px;
+  overflow:hidden; position:relative; display:flex; flex-direction:column;
+}
+.card-head { padding:14px 16px 10px; border-bottom:1px solid var(--border); }
+.card-tag { font-size:0.75rem; color:var(--orange); font-weight:600; margin-bottom:4px; }
+.card-title { font-family:'Orbitron',sans-serif; font-size:0.95rem; font-weight:700; }
+.card-desc { font-size:0.82rem; color:#aaa; margin-top:4px; }
+.card-body { display:flex; flex:1; }
+.card-members { flex:1; padding:12px; display:flex; flex-direction:column; gap:10px; }
+.mem-row { display:flex; gap:10px; position:relative; }
+.mem-num { width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; font-size:0.75rem; flex-shrink:0; }
+.mem-name { font-weight:700; }
+.mem-bind { font-size:0.78rem; color:#888; }
+.card-img-right {
+  width:130px; background:rgba(0,0,0,0.4); cursor:pointer; position:relative; border-left:1px solid var(--border);
+}
+.card-img-right img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none; }
+.card-img-right.loaded img { display:block; }
+.img-right-overlay {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:#888; font-size:0.8rem; text-align:center; padding:10px; pointer-events:none;
+}
+.card-foot { padding:12px; border-top:1px solid var(--border); background:rgba(0,0,0,0.25); }
+.mod-box, .tips-box, .warn-box {
+  border-radius:8px;
+  padding:10px 13px;
+  margin-bottom:10px;
+  position: relative;
+}
+.mod-box { background:rgba(255,140,66,0.08); border:1px solid rgba(255,140,66,0.4); }
+.mod-title { font-family:'Share Tech Mono',monospace; font-size:0.65rem; letter-spacing:1.5px; color:#ff8c42; margin-bottom:6px; }
+.mod-item { font-size:0.82rem; color:#a0e0c0; font-weight:600; padding:3px 0; }
+.tips-box { background:rgba(0,212,255,0.08); border:1px solid rgba(0,212,255,0.4); }
+.tips-title { font-family:'Share Tech Mono',monospace; font-size:0.65rem; letter-spacing:1.5px; color:#00d4ff; margin-bottom:6px; }
+.tips-item { font-size:0.82rem; color:#a0e0ff; font-weight:600; padding:3px 0; }
+.warn-box {
+  background:rgba(255,40,60,.08);
+  border:1px solid rgba(255,40,60,.35);
+  color:#ff8899;
+  line-height:1.55;
+}
+.delete-box {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: var(--red);
+  cursor: pointer;
+  font-size: 1.1rem;
+  opacity: 0.7;
+}
+.delete-box:hover { opacity: 1; }
+.edit-btn {
+  padding:7px 14px; background:rgba(0,212,255,0.15); color:var(--cyan);
+  border:1px solid var(--cyan); border-radius:6px; cursor:pointer; margin:5px;
+}
+.delete-mem { position:absolute; right:8px; top:8px; color:var(--red); cursor:pointer; font-size:1.1rem; }
+.delete-team-btn { position:absolute; top:12px; right:12px; background:rgba(255,50,50,0.85); color:white; border:none; padding:5px 12px; border-radius:6px; cursor:pointer; font-size:0.8rem; }
+.watermark { position:absolute; bottom:15px; right:15px; color:rgba(255,255,255,0.25); font-size:0.9rem; font-weight:600; pointer-events:none; z-index:5; }
+
+/* Style untuk tombol tambah point agar mudah disembunyikan */
+.add-point-btn {
+  font-size:0.75rem; color:#ff8c42; background:none; border:none; cursor:pointer; margin-top:6px;
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar" contenteditable="true">⚠ If you don't have RB or Secret — use Gold or Basic and upgrade.</div>
+<div class="main-header"><h1 contenteditable="true">TEAM COMPOSITION GUIDE</h1></div>
+<div class="section-label" contenteditable="true">CORE TEAMS</div>
+<div class="core-grid" id="coreGrid"></div>
+
+<div style="text-align:center; margin:25px 0;">
+  <button class="edit-btn" onclick="addNewCoreTeam()">➕ Tambah Team Core</button>
+</div>
+
+<div class="section-label new-teams" contenteditable="true">🟢 NEW TEAMS</div>
+<div class="new-grid" id="newGrid"></div>
+
+<div style="text-align:center; margin:25px 0;">
+  <button class="edit-btn" onclick="addNewTeam()">➕ Tambah Team Baru</button>
+</div>
+
+<div style="text-align:center; margin:40px 0;">
+  <button onclick="downloadAsImage()" style="padding:12px 28px; background:#00d4ff; color:#000; font-weight:700; border:none; border-radius:8px; font-size:1.1rem; cursor:pointer;">
+    📥 Download as Image (Clean)
+  </button>
+</div>
+
+<!-- MODAL IMAGE -->
+<div id="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:1000; align-items:center; justify-content:center;">
+  <div style="background:#1a1a2e; padding:25px; border-radius:12px; width:90%; max-width:420px; border:1px solid #00d4ff;">
+    <h3 style="color:var(--cyan); margin-bottom:15px;">Masukkan Link Gambar</h3>
+    <input id="modalInput" style="width:100%; padding:12px; background:#0f0f17; border:1px solid #00d4ff; color:white; border-radius:6px; font-size:15px;" 
+           placeholder="https://i.imgur.com/abc123.png" type="text">
+    <div style="text-align:right; margin-top:20px;">
+      <button onclick="closeModal()" style="margin-right:12px; padding:10px 20px; background:#333; color:white; border:none; border-radius:6px; cursor:pointer;">Batal</button>
+      <button onclick="applyImg()" style="padding:10px 20px; background:var(--cyan); color:black; border:none; border-radius:6px; font-weight:600; cursor:pointer;">Terapkan Gambar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== IMAGE SYSTEM ====================
+let activeId = null;
+
+function openModal(id) {
+  activeId = id;
+  document.getElementById('modalInput').value = '';
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+}
+
+function applyImg() {
+  if (!activeId) return closeModal();
+  
+  const url = document.getElementById('modalInput').value.trim();
+  if (!url) {
+    alert("Masukkan link gambar terlebih dahulu!");
+    return;
+  }
+
+  const panel = document.getElementById(`panel-${activeId}`);
+  if (panel) {
+    let img = panel.querySelector('img');
+    if (!img) {
+      img = document.createElement('img');
+      panel.appendChild(img);
+    }
+    img.src = url;
+    img.onerror = () => alert("Gagal memuat gambar.\nPastikan link gambar valid (Imgur, Discord, dll)");
+    panel.classList.add('loaded');
+  }
+  closeModal();
+}
+
+// ==================== BUILD CARD ====================
+function buildCard(t) {
+  const membersHTML = t.members.map((m, i) => `
+    <div class="mem-row">
+      <div class="mem-num">${i+1}</div>
+      <div style="flex:1">
+        <span class="mem-name" contenteditable="true">${m.name}</span><br>
+        <span class="mem-bind" contenteditable="true">${m.bind}</span>
+      </div>
+    </div>`).join('');
+
+  const cardHTML = `
+    <div class="team-card ${t.cls}">
+      <div class="card-head">
+        <div class="card-tag" contenteditable="true">${t.tag}</div>
+        <div class="card-title" contenteditable="true">${t.title}</div>
+        <div class="card-desc" contenteditable="true">${t.desc}</div>
+      </div>
+      <div class="card-body">
+        <div class="card-members">${membersHTML}</div>
+        <div class="card-img-right" id="panel-${t.id}" onclick="openModal('${t.id}')">
+          <img src="" alt="">
+          <div class="img-right-overlay">Click to add image</div>
+        </div>
+      </div>
+      <div class="card-foot">
+        <div class="foot-content"></div>
+        <div style="text-align:center; margin-top:10px;">
+          <button class="edit-btn" onclick="addModifierBox(this)">➕ Require Box</button>
+          <button class="edit-btn" onclick="addTipsBox(this)">➕ Tips Box (Biru)</button>
+          <button class="edit-btn" onclick="addWarningBox(this)">➕ Danger Box</button>
+          <button class="edit-btn" onclick="addMember(this)">➕ Tambah Unit</button>
+        </div>
+      </div>
+      <button class="delete-team-btn" onclick="this.closest('.team-card').remove()">🗑 Hapus Team</button>
+    </div>`;
+
+  const temp = document.createElement('div');
+  temp.innerHTML = cardHTML;
+  const card = temp.firstElementChild;
+
+  // Tambah tombol hapus member
+  card.querySelectorAll('.mem-row').forEach(row => {
+    const del = document.createElement('span');
+    del.className = 'delete-mem';
+    del.innerHTML = '✕';
+    del.onclick = () => row.remove();
+    row.appendChild(del);
+  });
+
+  return card;
+}
+
+// ==================== REQUIRE BOX ====================
+function addModifierBox(btn) {
+  const foot = btn.closest('.card-foot');
+  const content = foot.querySelector('.foot-content');
+  const box = document.createElement('div');
+  box.className = 'mod-box';
+  box.innerHTML = `
+    <div class="mod-title" contenteditable="true">🔶 REQUIRED — MAX BOTH MODIFIERS</div>
+    <div class="mod-list"></div>
+    <button class="add-point-btn" onclick="addPoint(this)">+ Tambah Point</button>
+    <span class="delete-box" onclick="this.closest('.mod-box').remove()">✕</span>
+  `;
+  addPointToBox(box.querySelector('.mod-list'));
+  content.appendChild(box);
+}
+
+function addPoint(btn) {
+  const list = btn.parentElement.querySelector('.mod-list');
+  addPointToBox(list);
+}
+
+function addPointToBox(list) {
+  const item = document.createElement('div');
+  item.className = 'mod-item';
+  item.contentEditable = true;
+  item.textContent = 'New Point';
+  list.appendChild(item);
+}
+
+// ==================== TIPS BOX ====================
+function addTipsBox(btn) {
+  const foot = btn.closest('.card-foot');
+  const content = foot.querySelector('.foot-content');
+  const box = document.createElement('div');
+  box.className = 'tips-box';
+  box.innerHTML = `
+    <div class="tips-title" contenteditable="true">💡 TIPS</div>
+    <div class="tips-list"></div>
+    <button class="add-point-btn" onclick="addTipsPoint(this)">+ Tambah Point</button>
+    <span class="delete-box" onclick="this.closest('.tips-box').remove()">✕</span>
+  `;
+  addTipsPointToBox(box.querySelector('.tips-list'));
+  content.appendChild(box);
+}
+
+function addTipsPoint(btn) {
+  const list = btn.parentElement.querySelector('.tips-list');
+  addTipsPointToBox(list);
+}
+
+function addTipsPointToBox(list) {
+  const item = document.createElement('div');
+  item.className = 'tips-item';
+  item.contentEditable = true;
+  item.textContent = 'New Tips';
+  list.appendChild(item);
+}
+
+// ==================== DANGER BOX ====================
+function addWarningBox(btn) {
+  const foot = btn.closest('.card-foot');
+  const content = foot.querySelector('.foot-content');
+  const box = document.createElement('div');
+  box.className = 'warn-box';
+  box.contentEditable = true;
+  box.innerHTML = `⚠ Do NOT use Merged Beast Secret... <span class="delete-box" onclick="this.closest('.warn-box').remove()">✕</span>`;
+  content.appendChild(box);
+}
+
+// ==================== TAMBAH UNIT ====================
+function addMember(btn) {
+  const card = btn.closest('.team-card');
+  const container = card.querySelector('.card-members');
+  const num = container.children.length + 1;
+  const newRow = document.createElement('div');
+  newRow.className = 'mem-row';
+  newRow.innerHTML = `
+    <div class="mem-num">${num}</div>
+    <div style="flex:1">
+      <span class="mem-name" contenteditable="true">Nama Unit Baru</span><br>
+      <span class="mem-bind" contenteditable="true">· Binding Vow</span>
+    </div>
+  `;
+  container.appendChild(newRow);
+
+  const del = document.createElement('span');
+  del.className = 'delete-mem';
+  del.innerHTML = '✕';
+  del.onclick = () => newRow.remove();
+  newRow.appendChild(del);
+}
+
+// ==================== TAMBAH TEAM ====================
+function addNewCoreTeam() {
+  const grid = document.getElementById('coreGrid');
+  const newTeam = {
+    id: 'core_' + Date.now(),
+    cls: '',
+    tag: 'TEAM CORE BARU',
+    title: 'New Core Team',
+    desc: 'Klik teks untuk mengedit...',
+    members: [{name:'Awakened Eclipseborn Hawk', bind:'Binding Vow'}]
+  };
+  grid.appendChild(buildCard(newTeam));
+}
+
+function addNewTeam() {
+  const grid = document.getElementById('newGrid');
+  const newTeam = {
+    id: 'new_' + Date.now(),
+    cls: '',
+    tag: 'TEAM BARU',
+    title: 'New Team',
+    desc: 'Klik teks untuk mengedit...',
+    members: [{name:'Unit Baru', bind:'Binding Vow'}]
+  };
+  grid.appendChild(buildCard(newTeam));
+}
+
+// ==================== DOWNLOAD AS IMAGE (SUDAH DIPERBAIKI) ====================
+function downloadAsImage() {
+  const hideElements = document.querySelectorAll('.edit-btn, .delete-mem, .delete-team-btn, .delete-box, .add-point-btn');
+  hideElements.forEach(el => el.style.display = 'none');
+
+  document.querySelectorAll('.team-card').forEach(card => {
+    if (!card.querySelector('.watermark')) {
+      const wm = document.createElement('div');
+      wm.className = 'watermark';
+      wm.textContent = 'By AnotherUseru';
+      card.appendChild(wm);
+    }
+  });
+
+  setTimeout(() => {
+    html2canvas(document.body, { 
+      scale: 2, 
+      useCORS: true, 
+      backgroundColor: '#0f0f17',
+      logging: false 
+    }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = 'Team_Composition_Guide_By_AnotherUseru.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+
+      // Restore tampilan
+      hideElements.forEach(el => el.style.display = '');
+      document.querySelectorAll('.watermark').forEach(wm => wm.remove());
+    }).catch(err => {
+      console.error(err);
+      alert("Gagal download. Coba refresh halaman.");
+      hideElements.forEach(el => el.style.display = '');
+    });
+  }, 400);
+}
+
+// Load awal
+window.onload = () => {
+  console.log("%c✅ Team Composition Guide siap digunakan!\nKlik area kanan kartu untuk tambah gambar.", "color:#00d4ff; font-size:15px");
+};
+</script>
+
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+</body>
+</html>
