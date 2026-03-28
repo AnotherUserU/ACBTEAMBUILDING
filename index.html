@@ -12,7 +12,19 @@
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-serif; font-size:15px; line-height:1.5; }
-.top-bar { background:rgba(255,40,60,0.09); border-bottom:1px solid rgba(255,40,60,0.28); padding:12px 24px; text-align:center; }
+.top-bar { 
+  background:rgba(255,40,60,0.12); 
+  border-bottom:2px solid rgba(255,40,60,0.5); 
+  padding:14px 24px; 
+  text-align:center; 
+  font-size:15px;
+  color: #ff3355;           /* Warna merah */
+  font-weight: 700;         /* Bold */
+}
+.top-bar strong {
+  color: #ff3355;
+  font-weight: 800;
+}
 .main-header h1 { font-family:'Orbitron',sans-serif; font-size:2.2rem; color:var(--gold); text-align:center; padding:30px 0; }
 .section-label { text-align:center; padding:30px 0 15px; font-size:0.9rem; letter-spacing:3px; color:var(--dim); }
 .core-grid, .new-grid { display:grid; gap:18px; max-width:1280px; margin:0 auto; padding:0 20px; }
@@ -78,7 +90,6 @@ body { background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-seri
 .delete-team-btn { position:absolute; top:12px; right:12px; background:rgba(255,50,50,0.85); color:white; border:none; padding:5px 12px; border-radius:6px; cursor:pointer; font-size:0.8rem; }
 .watermark { position:absolute; bottom:15px; right:15px; color:rgba(255,255,255,0.25); font-size:0.9rem; font-weight:600; pointer-events:none; z-index:5; }
 
-/* Style untuk tombol tambah point agar mudah disembunyikan */
 .add-point-btn {
   font-size:0.75rem; color:#ff8c42; background:none; border:none; cursor:pointer; margin-top:6px;
 }
@@ -86,7 +97,11 @@ body { background:var(--bg); color:var(--text); font-family:'Rajdhani',sans-seri
 </head>
 <body>
 
-<div class="top-bar" contenteditable="true">⚠ If you don't have RB or Secret — use Gold or Basic and upgrade.</div>
+<!-- Top Bar dengan tulisan merah dan bold -->
+<div class="top-bar" contenteditable="true">
+  ⚠ <strong>If you don't have RB or Secret — use Gold or Basic and upgrade.</strong>
+</div>
+
 <div class="main-header"><h1 contenteditable="true">TEAM COMPOSITION GUIDE</h1></div>
 <div class="section-label" contenteditable="true">CORE TEAMS</div>
 <div class="core-grid" id="coreGrid"></div>
@@ -199,7 +214,6 @@ function buildCard(t) {
   temp.innerHTML = cardHTML;
   const card = temp.firstElementChild;
 
-  // Tambah tombol hapus member
   card.querySelectorAll('.mem-row').forEach(row => {
     const del = document.createElement('span');
     del.className = 'delete-mem';
@@ -330,7 +344,7 @@ function addNewTeam() {
   grid.appendChild(buildCard(newTeam));
 }
 
-// ==================== DOWNLOAD AS IMAGE (SUDAH DIPERBAIKI) ====================
+// ==================== DOWNLOAD AS IMAGE ====================
 function downloadAsImage() {
   const hideElements = document.querySelectorAll('.edit-btn, .delete-mem, .delete-team-btn, .delete-box, .add-point-btn');
   hideElements.forEach(el => el.style.display = 'none');
@@ -356,7 +370,6 @@ function downloadAsImage() {
       link.href = canvas.toDataURL('image/png');
       link.click();
 
-      // Restore tampilan
       hideElements.forEach(el => el.style.display = '');
       document.querySelectorAll('.watermark').forEach(wm => wm.remove());
     }).catch(err => {
@@ -369,7 +382,7 @@ function downloadAsImage() {
 
 // Load awal
 window.onload = () => {
-  console.log("%c✅ Team Composition Guide siap digunakan!\nKlik area kanan kartu untuk tambah gambar.", "color:#00d4ff; font-size:15px");
+  console.log("%c✅ Team Composition Guide siap digunakan!", "color:#00d4ff; font-size:15px");
 };
 </script>
 
