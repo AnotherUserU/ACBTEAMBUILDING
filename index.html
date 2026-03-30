@@ -58,9 +58,9 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;fo
 .block-handle{position:relative;display:inline-flex;align-items:center;gap:6px;color:var(--dim);font-size:1rem;cursor:grab;opacity:0.6;transition:opacity .15s;user-select:none;z-index:10;padding:4px 8px;margin-left:-56px;}
 .page-block:hover .block-handle{opacity:1;}
 .block-handle:hover{opacity:1 !important;color:var(--cyan);}
-.btn-up,.btn-down{display:inline-block;font-size:0.75rem;cursor:pointer;padding:3px 5px;margin:0 2px;opacity:0;transition:opacity .15s;color:var(--dim);background:rgba(255,255,255,.05);border-radius:3px;line-height:1;}
+.btn-up,.btn-down{display:inline-block;font-size:1rem;cursor:pointer;padding:6px 8px;margin:0 3px;opacity:0;transition:opacity .15s;color:var(--dim);background:rgba(255,255,255,.08);border-radius:4px;line-height:1;font-weight:bold;}
 .block-handle:hover .btn-up,.block-handle:hover .btn-down{opacity:1;}
-.btn-up:hover,.btn-down:hover{color:var(--cyan);opacity:1 !important;background:rgba(0,212,255,.15);}
+.btn-up:hover,.btn-down:hover{color:var(--cyan);opacity:1 !important;background:rgba(0,212,255,.2);transform:scale(1.1);}
 #pageBody{padding-left:24px;padding-right:16px;}
 .top-bar{background:rgba(255,40,60,0.12);border-bottom:2px solid rgba(255,40,60,0.5);padding:14px 24px;text-align:center;font-size:15px;color:#ff3355;font-weight:700;outline:none;}
 .top-bar strong{color:#ff3355;font-weight:800;}
@@ -988,12 +988,14 @@ function addNewCoreTeam(){const card=buildCard({id:'core_'+Date.now(),tag:'NEW C
 function addNewTeam(){const card=buildCard({id:'new_'+Date.now(),tag:'NEW TEAM',title:'New Team',desc:'Click text to edit...',members:[{name:'New Unit',bind:'Binding Vow'}]});document.getElementById('newGrid').appendChild(card);card.scrollIntoView({behavior:'smooth',block:'center'});}
 function movePageBlock(block,dir){
   const parent=block.parentElement;
+  if(!parent) return;
   const all=[...parent.querySelectorAll('.page-block')];
   const idx=all.indexOf(block);
+  
   if(dir==='up'&&idx>0){
-    parent.insertBefore(block,all[idx-1]);
+    all[idx-1].insertAdjacentElement('beforebegin',block);
   }else if(dir==='down'&&idx<all.length-1){
-    parent.insertBefore(all[idx+1],block);
+    all[idx+1].insertAdjacentElement('afterend',block);
   }
 }
 function addNewPageBlock(){const pb=document.createElement('div');pb.className='page-block';pb.setAttribute('draggable','false');pb.setAttribute('data-block','user_'+Date.now());const html=`<span class="block-handle" title="Drag to reorder">⠿⠿<span class="btn-up" onclick="movePageBlock(this.closest('.page-block'),'up')" title="Move up">▲</span><span class="btn-down" onclick="movePageBlock(this.closest('.page-block'),'down')" title="Move down">▼</span></span><div class="section-label" contenteditable="true">NEW SECTION</div><div class="grid-wrap"><div class="team-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;"></div></div><div style="text-align:center;margin:0 0 18px"><button class="edit-btn" onclick="addNewTeam()">➕ Add New Team</button></div>`;pb.innerHTML=html;document.getElementById('pageBody').appendChild(pb);pb.scrollIntoView({behavior:'smooth',block:'center'});}
