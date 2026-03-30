@@ -671,6 +671,123 @@ function switchMode(mode){
   }
 }
 
+/* ══ ROLE & AUTH ══ */
+let currentRole=null;
+const ADMIN_PASSWORD='admin123';
+let GUIDE_REF=null;
+
+function enterAsGuest(){
+  currentRole='guest';
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('appContent').style.display='block';
+  document.body.classList.add('readonly');
+  const b=document.getElementById('roleBadge');b.style.display='block';b.className='guest-badge';b.innerHTML='👁 GUEST &nbsp;·&nbsp; click to exit';
+  loadFromFirebase();
+}
+function toggleAdminPw(){
+  const w=document.getElementById('adminPwWrap');
+  w.style.display=w.style.display==='block'?'none':'block';
+  if(w.style.display==='block')setTimeout(()=>document.getElementById('adminPwInput').focus(),60);
+}
+function submitAdminPw(){
+  const pw=document.getElementById('adminPwInput').value;
+  const err=document.getElementById('loginErr');
+  if(pw===ADMIN_PASSWORD){
+    currentRole='admin';
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('appContent').style.display='block';
+    document.body.classList.remove('readonly');
+    const b=document.getElementById('roleBadge');b.style.display='block';b.className='admin-badge';b.innerHTML='🔐 ADMIN &nbsp;·&nbsp; click to exit';
+    err.style.display='none';
+    loadFromFirebase();
+  }else{
+    err.style.display='block';
+    document.getElementById('adminPwInput').value='';
+    document.getElementById('adminPwInput').focus();
+  }
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const pw=document.getElementById('adminPwInput');
+  if(pw){
+    pw.addEventListener('keydown',e=>{
+      if(e.key==='Enter')submitAdminPw();
+      if(e.key==='Escape'){document.getElementById('adminPwWrap').style.display='none';}
+    });
+  }
+});
+function logoutToLogin(){
+  if(!confirm('Exit to login screen?'))return;
+  currentRole=null;
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('appContent').style.display='none';
+  document.getElementById('roleBadge').style.display='none';
+  document.body.classList.remove('readonly');
+  document.getElementById('adminPwInput').value='';
+  document.getElementById('adminPwWrap').style.display='none';
+  document.getElementById('loginErr').style.display='none';
+}
+
+/* ══ FIREBASE STATUS ══ */
+function showFbStatus(msg,type){
+  const el=document.getElementById('fbStatus');el.textContent=msg;el.className='show '+(type||'ok');
+  clearTimeout(el._t);el._t=setTimeout(()=>{el.className='';el.textContent='';},3500);
+}
+
+/* ══ FIREBASE SAVE/LOAD ══ */
+function saveToFirebase(){
+  if(currentRole!=='admin'){showToast('❌ Admin only!',true);return;}
+  showFbStatus('⏳ Saving...','loading');
+  const data={
+    coreGridHTML:document.getElementById('coreGrid')?.innerHTML||'',
+    newGridHTML:document.getElementById('newGrid')?.innerHTML||'',
+    storyCoreGridHTML:document.getElementById('storyCoreGrid')?.innerHTML||'',
+    storyNewGridHTML:document.getElementById('storyNewGrid')?.innerHTML||'',
+    mpChain:document.getElementById('mpChain')?.innerHTML||'',
+    credDisplay:document.getElementById('credSectionsDisplay')?.innerHTML||'',
+    credSections:JSON.stringify(credSections||{}),
+    savedAt:new Date().toLocaleString()
+  };
+  try{
+    GUIDE_REF.set(data)
+      .then(()=>{showFbStatus('✅ Saved!','ok');showToast('☁️ Saved to Firebase!');document.getElementById('saveStatus').textContent='☁️ Saved at '+data.savedAt;})
+      .catch(err=>{showFbStatus('❌ '+err.message,'err');showToast('❌ Save failed!',true);});
+  }catch(e){
+    showFbStatus('❌ Save error','err');
+  }
+}
+function loadFromFirebase(){
+  showFbStatus('⏳ Loading...','loading');
+  try{
+    GUIDE_REF.once('value').then(snap=>{
+      const data=snap.val();
+      if(!data){
+        showFbStatus('⚠ No cloud data — loading defaults','err');
+        const cg=document.getElementById('coreGrid');const ng=document.getElementById('newGrid');
+        CORE_TEAMS.forEach(t=>cg?.appendChild(buildCard(t)));
+        NEW_TEAMS.forEach(t=>ng?.appendChild(buildCard(t)));
+        const scg=document.getElementById('storyCoreGrid');const sng=document.getElementById('storyNewGrid');
+        if(scg)STORY_CORE_TEAMS.forEach(t=>scg.appendChild(buildCard(t)));
+        if(sng)STORY_NEW_TEAMS.forEach(t=>sng.appendChild(buildCard(t)));
+        rewireAll();
+        return;
+      }
+      if(data.coreGridHTML)document.getElementById('coreGrid').innerHTML=data.coreGridHTML;
+      if(data.newGridHTML)document.getElementById('newGrid').innerHTML=data.newGridHTML;
+      if(data.storyCoreGridHTML)document.getElementById('storyCoreGrid')?.innerHTML=data.storyCoreGridHTML||'';
+      if(data.storyNewGridHTML)document.getElementById('storyNewGrid')?.innerHTML=data.storyNewGridHTML||'';
+      if(data.mpChain)document.getElementById('mpChain').innerHTML=data.mpChain;
+      if(data.credDisplay)document.getElementById('credSectionsDisplay').innerHTML=data.credDisplay;
+      if(data.credSections)credSections=JSON.parse(data.credSections);
+      rewireAll();
+      showFbStatus('✅ Loaded!','ok');
+      document.getElementById('saveStatus').textContent='☁️ Loaded (saved '+data.savedAt+')';
+    }).catch(err=>{showFbStatus('❌ '+err.message,'err');loadLocal(true);});
+  }catch(e){
+    showFbStatus('❌ Connection error','err');
+    loadLocal(true);
+  }
+}
+
 /* THEME TOGGLE */
 let isDarkTheme=true;
 function toggleTheme(){
@@ -1108,16 +1225,18 @@ function showToast(msg,isErr){
 function saveLocal(){
   try{
     const data={
-      dungeonHTML:document.getElementById('dungeonSection').innerHTML,
-      storyHTML:document.getElementById('storySection').innerHTML,
-      mpChain:document.getElementById('mpChain').innerHTML,
-      credDisplay:document.getElementById('credSectionsDisplay').innerHTML,
-      credSections:JSON.stringify(credSections),
+      coreGridHTML:document.getElementById('coreGrid')?.innerHTML||'',
+      newGridHTML:document.getElementById('newGrid')?.innerHTML||'',
+      storyCoreGridHTML:document.getElementById('storyCoreGrid')?.innerHTML||'',
+      storyNewGridHTML:document.getElementById('storyNewGrid')?.innerHTML||'',
+      mpChain:document.getElementById('mpChain')?.innerHTML||'',
+      credDisplay:document.getElementById('credSectionsDisplay')?.innerHTML||'',
+      credSections:JSON.stringify(credSections||{}),
       savedAt:new Date().toLocaleString()
     };
     localStorage.setItem(SAVE_KEY,JSON.stringify(data));
-    document.getElementById('saveStatus').textContent='✅ Saved at '+data.savedAt;
-    showToast('✅ Data berhasil disimpan!');
+    document.getElementById('saveStatus').textContent='💾 Saved at '+data.savedAt;
+    showToast('💾 Data berhasil disimpan!');
   }catch(e){showToast('❌ Gagal menyimpan: '+e.message,true);}
 }
 function loadLocal(){
@@ -1125,8 +1244,10 @@ function loadLocal(){
     const raw=localStorage.getItem(SAVE_KEY);
     if(!raw){showToast('⚠ Tidak ada save.',true);return;}
     const data=JSON.parse(raw);
-    if(data.dungeonHTML)document.getElementById('dungeonSection').innerHTML=data.dungeonHTML;
-    if(data.storyHTML)document.getElementById('storySection').innerHTML=data.storyHTML;
+    if(data.coreGridHTML)document.getElementById('coreGrid').innerHTML=data.coreGridHTML;
+    if(data.newGridHTML)document.getElementById('newGrid').innerHTML=data.newGridHTML;
+    if(data.storyCoreGridHTML)document.getElementById('storyCoreGrid')?.innerHTML=data.storyCoreGridHTML||'';
+    if(data.storyNewGridHTML)document.getElementById('storyNewGrid')?.innerHTML=data.storyNewGridHTML||'';
     if(data.mpChain)document.getElementById('mpChain').innerHTML=data.mpChain;
     if(data.credDisplay)document.getElementById('credSectionsDisplay').innerHTML=data.credDisplay;
     if(data.credSections)credSections=JSON.parse(data.credSections);
@@ -1206,7 +1327,7 @@ window.onload=()=>{
 
 <!-- FIREBASE CONFIG & AUTH -->
 <script>
-/* ══ FIREBASE ══ */
+/* ══ FIREBASE CONFIG ══ */
 const firebaseConfig={
   apiKey:"AIzaSyDh_DKDgHUREWd-31kpdVhdcXopA4JYCig",
   authDomain:"idkk-6e874.firebaseapp.com",
@@ -1216,7 +1337,6 @@ const firebaseConfig={
   messagingSenderId:"28965015823",
   appId:"1:28965015823:web:e4513cdee2fd66ab4aee7a"
 };
-let GUIDE_REF=null;
 try{
   firebase.initializeApp(firebaseConfig);
   const db=firebase.database();
@@ -1224,139 +1344,6 @@ try{
   console.log('%c🔥 Firebase Connected','color:#ff8c42;font-size:13px');
 }catch(e){
   console.warn('Firebase init error:',e);
-}
-
-/* ══ PASSWORD — GANTI INI! ══ */
-const ADMIN_PASSWORD='admin123';
-
-/* ══ ROLE ══ */
-let currentRole=null;
-function enterAsGuest(){
-  currentRole='guest';
-  document.getElementById('loginScreen').style.display='none';
-  document.getElementById('appContent').style.display='block';
-  document.body.classList.add('readonly');
-  const b=document.getElementById('roleBadge');b.style.display='block';b.className='guest-badge';b.innerHTML='👁 GUEST &nbsp;·&nbsp; click to exit';
-  loadFromFirebase();
-}
-function toggleAdminPw(){
-  const w=document.getElementById('adminPwWrap');
-  w.style.display=w.style.display==='block'?'none':'block';
-  if(w.style.display==='block')setTimeout(()=>document.getElementById('adminPwInput').focus(),60);
-}
-function submitAdminPw(){
-  const pw=document.getElementById('adminPwInput').value;
-  const err=document.getElementById('loginErr');
-  if(pw===ADMIN_PASSWORD){
-    currentRole='admin';
-    document.getElementById('loginScreen').style.display='none';
-    document.getElementById('appContent').style.display='block';
-    document.body.classList.remove('readonly');
-    const b=document.getElementById('roleBadge');b.style.display='block';b.className='admin-badge';b.innerHTML='🔐 ADMIN &nbsp;·&nbsp; click to exit';
-    err.style.display='none';
-    loadFromFirebase();
-  }else{
-    err.style.display='block';
-    document.getElementById('adminPwInput').value='';
-    document.getElementById('adminPwInput').focus();
-  }
-}
-document.getElementById('adminPwInput').addEventListener('keydown',e=>{
-  if(e.key==='Enter')submitAdminPw();
-  if(e.key==='Escape'){document.getElementById('adminPwWrap').style.display='none';}
-});
-function logoutToLogin(){
-  if(!confirm('Exit to login screen?'))return;
-  currentRole=null;
-  document.getElementById('loginScreen').style.display='flex';
-  document.getElementById('appContent').style.display='none';
-  document.getElementById('roleBadge').style.display='none';
-  document.body.classList.remove('readonly');
-  document.getElementById('adminPwInput').value='';
-  document.getElementById('adminPwWrap').style.display='none';
-  document.getElementById('loginErr').style.display='none';
-}
-
-/* ══ FIREBASE STATUS ══ */
-function showFbStatus(msg,type){
-  const el=document.getElementById('fbStatus');el.textContent=msg;el.className='show '+(type||'ok');
-  clearTimeout(el._t);el._t=setTimeout(()=>{el.className='';el.textContent='';},3500);
-}
-
-/* ══ FIREBASE SAVE/LOAD ══ */
-function saveToFirebase(){
-  if(currentRole!=='admin'){showToast('❌ Admin only!',true);return;}
-  showFbStatus('⏳ Saving...','loading');
-  const data={
-    dungeonGroupsHTML:document.getElementById('dungeonGroups')?.innerHTML||'',
-    storyGroupsHTML:document.getElementById('storyGroups')?.innerHTML||'',
-    mpChain:document.getElementById('mpChain')?.innerHTML||'',
-    credDisplay:document.getElementById('credSectionsDisplay')?.innerHTML||'',
-    credSections:JSON.stringify(credSections||{}),
-    savedAt:new Date().toLocaleString()
-  };
-  try{
-    GUIDE_REF.set(data)
-      .then(()=>{showFbStatus('✅ Saved!','ok');showToast('☁️ Saved to Firebase!');document.getElementById('saveStatus').textContent='☁️ Saved at '+data.savedAt;})
-      .catch(err=>{showFbStatus('❌ '+err.message,'err');showToast('❌ Save failed!',true);});
-  }catch(e){
-    showFbStatus('❌ Save error','err');
-  }
-}
-function loadFromFirebase(){
-  showFbStatus('⏳ Loading...','loading');
-  try{
-    GUIDE_REF.once('value').then(snap=>{
-      const data=snap.val();
-      if(!data){showFbStatus('⚠ No cloud data — loading defaults','err');loadDefaults();return;}
-      if(data.dungeonGroupsHTML)document.getElementById('dungeonGroups').innerHTML=data.dungeonGroupsHTML;
-      if(data.storyGroupsHTML)document.getElementById('storyGroups').innerHTML=data.storyGroupsHTML;
-      if(data.mpChain)document.getElementById('mpChain').innerHTML=data.mpChain;
-      if(data.credDisplay)document.getElementById('credSectionsDisplay').innerHTML=data.credDisplay;
-      if(data.credSections)credSections=JSON.parse(data.credSections);
-      rewireAll();
-      showFbStatus('✅ Loaded!','ok');
-      document.getElementById('saveStatus').textContent='☁️ Loaded (saved '+data.savedAt+')';
-    }).catch(err=>{showFbStatus('❌ '+err.message,'err');loadLocal(true);});
-  }catch(e){
-    showFbStatus('❌ Connection error','err');
-    loadLocal(true);
-  }
-}
-
-/* ══ LOCAL BACKUP ══ */
-const SAVE_KEY='ACB_GUIDE_SAVE';
-function saveLocal(){
-  try{
-    const data={
-      dungeonGroupsHTML:document.getElementById('dungeonGroups')?.innerHTML||'',
-      storyGroupsHTML:document.getElementById('storyGroups')?.innerHTML||'',
-      mpChain:document.getElementById('mpChain')?.innerHTML||'',
-      credDisplay:document.getElementById('credSectionsDisplay')?.innerHTML||'',
-      credSections:JSON.stringify(credSections||{}),
-      savedAt:new Date().toLocaleString()
-    };
-    localStorage.setItem(SAVE_KEY,JSON.stringify(data));showToast('💾 Local backup saved!');
-  }catch(e){showToast('❌ '+e.message,true);}
-}
-function loadLocal(silent){
-  try{
-    const raw=localStorage.getItem(SAVE_KEY);
-    if(!raw){if(!silent)showToast('⚠ No local save.',true);return;}
-    const data=JSON.parse(raw);
-    if(data.dungeonGroupsHTML)document.getElementById('dungeonGroups').innerHTML=data.dungeonGroupsHTML;
-    if(data.storyGroupsHTML)document.getElementById('storyGroups').innerHTML=data.storyGroupsHTML;
-    if(data.mpChain)document.getElementById('mpChain').innerHTML=data.mpChain;
-    if(data.credDisplay)document.getElementById('credSectionsDisplay').innerHTML=data.credDisplay;
-    if(data.credSections)credSections=JSON.parse(data.credSections);
-    rewireAll();
-    if(!silent)showToast('📂 Local backup loaded!');
-  }catch(e){if(!silent)showToast('❌ '+e.message,true);}
-}
-function deleteLocal(){
-  if(!localStorage.getItem(SAVE_KEY)){showToast('⚠ No local save.',true);return;}
-  if(!confirm('Delete local backup? Cannot undo.'))return;
-  localStorage.removeItem(SAVE_KEY);showToast('🗑 Local backup deleted.');
 }
 </script>
 
