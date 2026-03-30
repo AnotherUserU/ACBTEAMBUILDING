@@ -55,10 +55,10 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;fo
 .page-block{position:relative;transition:opacity .2s;}
 .page-block.dragging-block{opacity:.35;}
 .page-block.block-drag-over{outline:2px dashed var(--cyan);border-radius:6px;}
-.block-handle{position:absolute;left:-28px;top:50%;transform:translateY(-50%);color:var(--dim);font-size:1rem;cursor:grab;opacity:0;transition:opacity .15s;user-select:none;z-index:10;}
-.page-block:hover .block-handle{opacity:.6;}
-.block-handle:hover{opacity:1 !important;}
-#pageBody{padding-left:36px;padding-right:16px;}
+.block-handle{position:absolute;left:-48px;top:50%;transform:translateY(-50%);color:var(--dim);font-size:1.2rem;cursor:grab;opacity:0.7;transition:opacity .15s;user-select:none;z-index:10;padding:12px;}
+.page-block:hover .block-handle{opacity:1;}
+.block-handle:hover{opacity:1 !important;color:var(--cyan);}
+#pageBody{padding-left:64px;padding-right:16px;}
 .top-bar{background:rgba(255,40,60,0.12);border-bottom:2px solid rgba(255,40,60,0.5);padding:14px 24px;text-align:center;font-size:15px;color:#ff3355;font-weight:700;outline:none;}
 .top-bar strong{color:#ff3355;font-weight:800;}
 .main-title{font-family:'Orbitron',sans-serif;font-size:2.2rem;color:var(--gold);text-align:center;padding:30px 0;outline:none;text-shadow:0 0 30px rgba(245,200,66,.3);letter-spacing:.18em;}
@@ -81,8 +81,8 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;fo
 .card-desc{font-size:.82rem;color:#aaa;margin-top:4px;outline:none;}
 .card-body{display:flex;flex:1;}
 .card-members{flex:1;padding:12px;display:flex;flex-direction:column;gap:10px;}
-.mem-row{display:flex;gap:10px;position:relative;align-items:flex-start;cursor:grab;}
-.mem-row:active{cursor:grabbing;}
+.mem-row{display:flex;gap:10px;position:relative;align-items:flex-start;cursor:default;}
+.mem-row:active{cursor:default;}
 .mem-row.dragging-mem{opacity:.35;}
 .mem-row.over-mem{box-shadow:0 -2px 0 var(--cyan);}
 .mem-num{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0;color:var(--tc,#f5c842);}
@@ -1308,21 +1308,6 @@ function rewireAll(){
 }
 
 window.onload=()=>{
-  const raw=localStorage.getItem(SAVE_KEY);
-  if(raw){
-    try{
-      const data=JSON.parse(raw);
-      if(data.dungeonHTML)document.getElementById('dungeonSection').innerHTML=data.dungeonHTML;
-      if(data.storyHTML)document.getElementById('storySection').innerHTML=data.storyHTML;
-      if(data.mpChain)document.getElementById('mpChain').innerHTML=data.mpChain;
-      if(data.credDisplay)document.getElementById('credSectionsDisplay').innerHTML=data.credDisplay;
-      if(data.credSections)credSections=JSON.parse(data.credSections);
-      rewireAll();
-      document.getElementById('saveStatus').textContent='📂 Auto-loaded from '+data.savedAt;
-      console.log('%c📂 Auto-loaded!','color:#00e87a;font-size:13px');
-      return;
-    }catch(e){console.warn('Auto-load failed, using defaults',e);}
-  }
   const cg=document.getElementById('coreGrid');const ng=document.getElementById('newGrid');
   CORE_TEAMS.forEach(t=>cg.appendChild(buildCard(t)));
   NEW_TEAMS.forEach(t=>ng.appendChild(buildCard(t)));
