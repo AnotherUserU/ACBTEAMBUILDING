@@ -217,31 +217,37 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;fo
 #fbStatus.err{background:rgba(255,51,85,.2);color:var(--red);border:1px solid rgba(255,51,85,.5);}
 #fbStatus.loading{background:rgba(0,212,255,.2);color:var(--cyan);border:1px solid rgba(0,212,255,.5);}
 
-/* READONLY MODE */
-body.readonly [contenteditable],
-body.readonly .edit-btn,
-body.readonly .add-banner-btn,
-body.readonly .add-point-btn,
-body.readonly .delete-box,
-body.readonly .delete-mem,
-body.readonly .delete-team-btn,
-body.readonly .delete-pill,
-body.readonly .color-dot,
-body.readonly .cred-edit-btn,
-body.readonly .mod-add-row-btn,
-body.readonly .cred-add-name-btn,
-body.readonly .cred-add-section-btn,
-body.readonly .footer-btn,
-body.readonly .save-btn,
-body.readonly .card-img-right,
-body.readonly .card-drag-handle,
-body.readonly .mem-row,
-body.readonly .mem-name,
-body.readonly .mp-pill,
-body.readonly .h1-swatch{
-  pointer-events:none !important;
-  opacity:0.5 !important;
-  cursor:not-allowed !important;
+/* GUEST MODE - HIDE ADMIN BUTTONS */
+body.guest-mode .edit-btn,
+body.guest-mode .add-banner-btn,
+body.guest-mode .add-point-btn,
+body.guest-mode .delete-box,
+body.guest-mode .delete-mem,
+body.guest-mode .delete-team-btn,
+body.guest-mode .delete-pill,
+body.guest-mode .color-dot,
+body.guest-mode .cred-edit-btn,
+body.guest-mode .mod-add-row-btn,
+body.guest-mode .cred-add-name-btn,
+body.guest-mode .cred-add-section-btn,
+body.guest-mode .float-xl,
+body.guest-mode .card-img-right,
+body.guest-mode .card-drag-handle,
+body.guest-mode .mem-row:hover,
+body.guest-mode .mp-pill,
+body.guest-mode .h1-swatch{
+  display:none !important;
+}
+/* MAKE CONTENT READ-ONLY FOR GUEST */
+body.guest-mode [contenteditable]{
+  cursor:default !important;
+}
+body.guest-mode [contenteditable]:focus{
+  outline:none !important;
+}
+/* HIDE SAVE BUTTONS FOR GUEST */
+body.guest-mode .save-btn{
+  display:none !important;
 }
 
 /* CREDITS BOX */
@@ -357,8 +363,7 @@ body.readonly .h1-swatch{
   </div>
 </div>
 
-<!-- ROLE BADGE -->
-<div id="roleBadge" onclick="logoutToLogin()"></div>
+
 
 <!-- FIREBASE STATUS -->
 <div id="fbStatus"></div>
@@ -371,7 +376,10 @@ body.readonly .h1-swatch{
     <button class="nav-btn active" onclick="switchMode('dungeon')">DUNGEON</button>
     <button class="nav-btn" onclick="switchMode('story')">STORY</button>
   </div>
-  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙 Dark</button>
+  <div style="display:flex;gap:12px;align-items:center;">
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙 Dark</button>
+    <button id="logoutBtn" style="display:none;padding:8px 14px;background:rgba(255,51,85,.15);color:#ff3355;border:1px solid rgba(255,51,85,.35);border-radius:8px;cursor:pointer;font-size:14px;font-weight:700;font-family:'Rajdhani',sans-serif;transition:all .2s;" onclick="logoutToLogin()">🚪 Logout</button>
+  </div>
 </div>
 
 <div id="pageBody">
@@ -679,8 +687,10 @@ function enterAsGuest(){
   currentRole='guest';
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appContent').style.display='block';
-  document.body.classList.add('readonly');
-  const b=document.getElementById('roleBadge');b.style.display='block';b.className='guest-badge';b.innerHTML='👁 GUEST &nbsp;·&nbsp; click to exit';
+  document.body.classList.add('guest-mode');
+  document.getElementById('logoutBtn').style.display='block';
+  document.getElementById('logoutBtn').textContent='👁 GUEST · Logout';
+  document.querySelectorAll('[contenteditable]').forEach(el=>el.contentEditable='false');
   loadFromFirebase();
 }
 function toggleAdminPw(){
@@ -695,8 +705,10 @@ function submitAdminPw(){
     currentRole='admin';
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('appContent').style.display='block';
-    document.body.classList.remove('readonly');
-    const b=document.getElementById('roleBadge');b.style.display='block';b.className='admin-badge';b.innerHTML='🔐 ADMIN &nbsp;·&nbsp; click to exit';
+    document.body.classList.remove('guest-mode');
+    document.getElementById('logoutBtn').style.display='block';
+    document.getElementById('logoutBtn').textContent='🔐 ADMIN · Logout';
+    document.querySelectorAll('[contenteditable="false"]').forEach(el=>el.contentEditable='true');
     err.style.display='none';
     loadFromFirebase();
   }else{
@@ -719,11 +731,12 @@ function logoutToLogin(){
   currentRole=null;
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('appContent').style.display='none';
-  document.getElementById('roleBadge').style.display='none';
-  document.body.classList.remove('readonly');
+  document.body.classList.remove('guest-mode');
+  document.getElementById('logoutBtn').style.display='none';
   document.getElementById('adminPwInput').value='';
   document.getElementById('adminPwWrap').style.display='none';
   document.getElementById('loginErr').style.display='none';
+  document.querySelectorAll('[contenteditable="false"]').forEach(el=>el.contentEditable='true');
 }
 
 /* ══ FIREBASE STATUS ══ */
