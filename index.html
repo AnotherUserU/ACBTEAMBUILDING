@@ -233,7 +233,6 @@ body.guest-mode .cred-add-section-btn,
 body.guest-mode .float-xl,
 body.guest-mode .card-img-right,
 body.guest-mode .card-drag-handle,
-body.guest-mode .mem-row:hover,
 body.guest-mode .mp-pill,
 body.guest-mode .h1-swatch{
   display:none !important;
@@ -244,6 +243,10 @@ body.guest-mode [contenteditable]{
 }
 body.guest-mode [contenteditable]:focus{
   outline:none !important;
+}
+/* DISABLE DRAG FOR GUEST */
+body.guest-mode [draggable]{
+  cursor:default !important;
 }
 /* HIDE SAVE BUTTONS FOR GUEST */
 body.guest-mode .save-btn{
