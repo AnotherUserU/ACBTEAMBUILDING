@@ -7,9 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://www.gstatic.com/firebaseapp.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
 :root{--bg:#0f0f17;--bg2:#13131f;--bg3:#1a1a2e;--border:rgba(255,255,255,0.07);--text:#dde0f0;--dim:#6b6f8f;--gold:#f5c842;--cyan:#00d4ff;--green:#00e87a;--red:#ff3355;--orange:#ff8c42;--purple:#c36bff;--pink:#ff5fa0;--blue:#4488ff;}
 :root.light-theme{--bg:#ffffff;--bg2:#f5f5f5;--bg3:#eeeeee;--border:rgba(0,0,0,0.1);--text:#1a1a1a;--dim:#888888;--gold:#d4a500;--cyan:#0099cc;--green:#009900;--red:#cc0000;--orange:#ff8000;--purple:#9933cc;--pink:#cc0066;--blue:#0066cc;}
@@ -738,12 +737,12 @@ function saveToFirebase(){
   if(currentRole!=='admin'){showToast('❌ Admin only!',true);return;}
   showFbStatus('⏳ Saving...','loading');
   const data={
-    coreGridHTML:document.getElementById('coreGrid')?.innerHTML||'',
-    newGridHTML:document.getElementById('newGrid')?.innerHTML||'',
-    storyCoreGridHTML:document.getElementById('storyCoreGrid')?.innerHTML||'',
-    storyNewGridHTML:document.getElementById('storyNewGrid')?.innerHTML||'',
-    mpChain:document.getElementById('mpChain')?.innerHTML||'',
-    credDisplay:document.getElementById('credSectionsDisplay')?.innerHTML||'',
+    coreGridHTML:(document.getElementById('coreGrid')?.innerHTML)||'',
+    newGridHTML:(document.getElementById('newGrid')?.innerHTML)||'',
+    storyCoreGridHTML:(document.getElementById('storyCoreGrid')?.innerHTML)||'',
+    storyNewGridHTML:(document.getElementById('storyNewGrid')?.innerHTML)||'',
+    mpChain:(document.getElementById('mpChain')?.innerHTML)||'',
+    credDisplay:(document.getElementById('credSectionsDisplay')?.innerHTML)||'',
     credSections:JSON.stringify(credSections||{}),
     savedAt:new Date().toLocaleString()
   };
@@ -771,12 +770,12 @@ function loadFromFirebase(){
         rewireAll();
         return;
       }
-      if(data.coreGridHTML)document.getElementById('coreGrid').innerHTML=data.coreGridHTML;
-      if(data.newGridHTML)document.getElementById('newGrid').innerHTML=data.newGridHTML;
-      if(data.storyCoreGridHTML)document.getElementById('storyCoreGrid')?.innerHTML=data.storyCoreGridHTML||'';
-      if(data.storyNewGridHTML)document.getElementById('storyNewGrid')?.innerHTML=data.storyNewGridHTML||'';
-      if(data.mpChain)document.getElementById('mpChain').innerHTML=data.mpChain;
-      if(data.credDisplay)document.getElementById('credSectionsDisplay').innerHTML=data.credDisplay;
+      if(data.coreGridHTML){const cg=document.getElementById('coreGrid');if(cg)cg.innerHTML=data.coreGridHTML;}
+      if(data.newGridHTML){const ng=document.getElementById('newGrid');if(ng)ng.innerHTML=data.newGridHTML;}
+      if(data.storyCoreGridHTML){const scg=document.getElementById('storyCoreGrid');if(scg)scg.innerHTML=data.storyCoreGridHTML;}
+      if(data.storyNewGridHTML){const sng=document.getElementById('storyNewGrid');if(sng)sng.innerHTML=data.storyNewGridHTML;}
+      if(data.mpChain){const mc=document.getElementById('mpChain');if(mc)mc.innerHTML=data.mpChain;}
+      if(data.credDisplay){const cd=document.getElementById('credSectionsDisplay');if(cd)cd.innerHTML=data.credDisplay;}
       if(data.credSections)credSections=JSON.parse(data.credSections);
       rewireAll();
       showFbStatus('✅ Loaded!','ok');
@@ -1225,12 +1224,12 @@ function showToast(msg,isErr){
 function saveLocal(){
   try{
     const data={
-      coreGridHTML:document.getElementById('coreGrid')?.innerHTML||'',
-      newGridHTML:document.getElementById('newGrid')?.innerHTML||'',
-      storyCoreGridHTML:document.getElementById('storyCoreGrid')?.innerHTML||'',
-      storyNewGridHTML:document.getElementById('storyNewGrid')?.innerHTML||'',
-      mpChain:document.getElementById('mpChain')?.innerHTML||'',
-      credDisplay:document.getElementById('credSectionsDisplay')?.innerHTML||'',
+      coreGridHTML:(document.getElementById('coreGrid')?.innerHTML)||'',
+      newGridHTML:(document.getElementById('newGrid')?.innerHTML)||'',
+      storyCoreGridHTML:(document.getElementById('storyCoreGrid')?.innerHTML)||'',
+      storyNewGridHTML:(document.getElementById('storyNewGrid')?.innerHTML)||'',
+      mpChain:(document.getElementById('mpChain')?.innerHTML)||'',
+      credDisplay:(document.getElementById('credSectionsDisplay')?.innerHTML)||'',
       credSections:JSON.stringify(credSections||{}),
       savedAt:new Date().toLocaleString()
     };
@@ -1244,12 +1243,12 @@ function loadLocal(){
     const raw=localStorage.getItem(SAVE_KEY);
     if(!raw){showToast('⚠ Tidak ada save.',true);return;}
     const data=JSON.parse(raw);
-    if(data.coreGridHTML)document.getElementById('coreGrid').innerHTML=data.coreGridHTML;
-    if(data.newGridHTML)document.getElementById('newGrid').innerHTML=data.newGridHTML;
-    if(data.storyCoreGridHTML)document.getElementById('storyCoreGrid')?.innerHTML=data.storyCoreGridHTML||'';
-    if(data.storyNewGridHTML)document.getElementById('storyNewGrid')?.innerHTML=data.storyNewGridHTML||'';
-    if(data.mpChain)document.getElementById('mpChain').innerHTML=data.mpChain;
-    if(data.credDisplay)document.getElementById('credSectionsDisplay').innerHTML=data.credDisplay;
+    if(data.coreGridHTML){const cg=document.getElementById('coreGrid');if(cg)cg.innerHTML=data.coreGridHTML;}
+    if(data.newGridHTML){const ng=document.getElementById('newGrid');if(ng)ng.innerHTML=data.newGridHTML;}
+    if(data.storyCoreGridHTML){const scg=document.getElementById('storyCoreGrid');if(scg)scg.innerHTML=data.storyCoreGridHTML;}
+    if(data.storyNewGridHTML){const sng=document.getElementById('storyNewGrid');if(sng)sng.innerHTML=data.storyNewGridHTML;}
+    if(data.mpChain){const mc=document.getElementById('mpChain');if(mc)mc.innerHTML=data.mpChain;}
+    if(data.credDisplay){const cd=document.getElementById('credSectionsDisplay');if(cd)cd.innerHTML=data.credDisplay;}
     if(data.credSections)credSections=JSON.parse(data.credSections);
     rewireAll();
     document.getElementById('saveStatus').textContent='📂 Loaded from '+data.savedAt;
@@ -1337,14 +1336,20 @@ const firebaseConfig={
   messagingSenderId:"28965015823",
   appId:"1:28965015823:web:e4513cdee2fd66ab4aee7a"
 };
-try{
-  firebase.initializeApp(firebaseConfig);
-  const db=firebase.database();
-  GUIDE_REF=db.ref('guide');
-  console.log('%c🔥 Firebase Connected','color:#ff8c42;font-size:13px');
-}catch(e){
-  console.warn('Firebase init error:',e);
-}
+document.addEventListener('DOMContentLoaded',()=>{
+  try{
+    if(window.firebase){
+      firebase.initializeApp(firebaseConfig);
+      const db=firebase.database();
+      GUIDE_REF=db.ref('guide');
+      console.log('%c🔥 Firebase Connected','color:#ff8c42;font-size:13px');
+    }else{
+      console.warn('Firebase SDK not loaded');
+    }
+  }catch(e){
+    console.warn('Firebase init error:',e);
+  }
+});
 </script>
 
 </div><!-- END appContent -->
