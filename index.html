@@ -55,10 +55,13 @@ body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;fo
 .page-block{position:relative;transition:opacity .2s;}
 .page-block.dragging-block{opacity:.35;}
 .page-block.block-drag-over{outline:2px dashed var(--cyan);border-radius:6px;}
-.block-handle{position:absolute;left:-48px;top:50%;transform:translateY(-50%);color:var(--dim);font-size:1.2rem;cursor:grab;opacity:0.7;transition:opacity .15s;user-select:none;z-index:10;padding:12px;}
+.block-handle{position:relative;display:inline-flex;align-items:center;gap:6px;color:var(--dim);font-size:1rem;cursor:grab;opacity:0.6;transition:opacity .15s;user-select:none;z-index:10;padding:4px 8px;margin-left:-56px;}
 .page-block:hover .block-handle{opacity:1;}
 .block-handle:hover{opacity:1 !important;color:var(--cyan);}
-#pageBody{padding-left:64px;padding-right:16px;}
+.btn-up,.btn-down{font-size:0.8rem;cursor:pointer;padding:2px 4px;opacity:0;transition:opacity .15s;color:var(--dim);}
+.block-handle:hover .btn-up,.block-handle:hover .btn-down{opacity:0.7;}
+.btn-up:hover,.btn-down:hover{color:var(--cyan);opacity:1 !important;}
+#pageBody{padding-left:24px;padding-right:16px;}
 .top-bar{background:rgba(255,40,60,0.12);border-bottom:2px solid rgba(255,40,60,0.5);padding:14px 24px;text-align:center;font-size:15px;color:#ff3355;font-weight:700;outline:none;}
 .top-bar strong{color:#ff3355;font-weight:800;}
 .main-title{font-family:'Orbitron',sans-serif;font-size:2.2rem;color:var(--gold);text-align:center;padding:30px 0;outline:none;text-shadow:0 0 30px rgba(245,200,66,.3);letter-spacing:.18em;}
@@ -548,6 +551,7 @@ body.guest-mode .save-btn{
       <button class="save-btn red"   onclick="deleteLocal()">🗑 Delete Local Save</button>
       <button class="save-btn cyan admin-only" onclick="saveToFirebase()">☁️ Save to Firebase</button>
       <button class="save-btn blue admin-only" onclick="loadFromFirebase()">⬇️ Load from Firebase</button>
+      <button class="save-btn gold admin-only" onclick="addNewPageBlock()">➕ Add New Section</button>
       <span class="save-status" id="saveStatus"></span>
     </div>
   </div>
@@ -980,6 +984,8 @@ function addMember(btn){
 /* ADD TEAM */
 function addNewCoreTeam(){const card=buildCard({id:'core_'+Date.now(),tag:'NEW CORE TEAM',title:'New Core Team',desc:'Click text to edit...',members:[{name:'Awakened Eclipseborn Hawk',bind:'Binding Vow'}]});document.getElementById('coreGrid').appendChild(card);card.scrollIntoView({behavior:'smooth',block:'center'});}
 function addNewTeam(){const card=buildCard({id:'new_'+Date.now(),tag:'NEW TEAM',title:'New Team',desc:'Click text to edit...',members:[{name:'New Unit',bind:'Binding Vow'}]});document.getElementById('newGrid').appendChild(card);card.scrollIntoView({behavior:'smooth',block:'center'});}
+function movePageBlock(block,dir){const parent=block.parentElement;const all=[...parent.querySelectorAll('.page-block')];const idx=all.indexOf(block);if(dir==='up'&&idx>0){parent.insertBefore(block,all[idx-1]);}else if(dir==='down'&&idx<all.length-1){parent.insertBefore(all[idx+1],block);}}
+function addNewPageBlock(){const pb=document.createElement('div');pb.className='page-block';pb.setAttribute('draggable','false');pb.setAttribute('data-block','user_'+Date.now());const html=`<span class="block-handle" title="Drag to reorder">⠿⠿<span class="btn-up" onclick="movePageBlock(this.closest('.page-block'),'up')" title="Move up">▲</span><span class="btn-down" onclick="movePageBlock(this.closest('.page-block'),'down')" title="Move down">▼</span></span><div class="section-label" contenteditable="true">NEW SECTION</div><div class="grid-wrap"><div class="team-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;"></div></div><div style="text-align:center;margin:0 0 18px"><button class="edit-btn" onclick="addNewTeam()">➕ Add New Team</button></div>`;pb.innerHTML=html;document.getElementById('pageBody').appendChild(pb);pb.scrollIntoView({behavior:'smooth',block:'center'});}
 function addNewStoryCoreTeam(){const card=buildCard({id:'story_core_'+Date.now(),tag:'NEW STORY CORE TEAM',title:'New Story Core Team',desc:'Click text to edit...',members:[{name:'Awakened Eclipseborn Hawk',bind:'Binding Vow'}]});document.getElementById('storyCoreGrid').appendChild(card);card.scrollIntoView({behavior:'smooth',block:'center'});}
 function addNewStoryTeam(){const card=buildCard({id:'story_new_'+Date.now(),tag:'NEW STORY TEAM',title:'New Story Team',desc:'Click text to edit...',members:[{name:'New Unit',bind:'Binding Vow'}]});document.getElementById('storyNewGrid').appendChild(card);card.scrollIntoView({behavior:'smooth',block:'center'});}
 
@@ -1351,6 +1357,12 @@ document.addEventListener('DOMContentLoaded',()=>{
   }catch(e){
     console.warn('Firebase init error:',e);
   }
+  document.querySelectorAll('.block-handle').forEach(handle=>{
+    if(!handle.innerHTML.includes('btn-up')){
+      const arrows=`<span class="btn-up" onclick="movePageBlock(this.closest('.page-block'),'up')" title="Move up">▲</span><span class="btn-down" onclick="movePageBlock(this.closest('.page-block'),'down')" title="Move down">▼</span>`;
+      handle.innerHTML=handle.innerHTML+arrows;
+    }
+  });
 });
 </script>
 
