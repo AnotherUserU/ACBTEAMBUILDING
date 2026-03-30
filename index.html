@@ -342,6 +342,10 @@ body.guest-mode .save-btn{
 .save-btn.red:hover{background:rgba(255,51,85,.25);}
 .save-btn.gray{background:rgba(255,255,255,.07);color:var(--dim);border:1px solid rgba(255,255,255,.1);}
 .save-btn.gray:hover{background:rgba(255,255,255,.12);color:var(--text);}
+.save-btn.cyan{background:linear-gradient(135deg,#00d4ff,#0099cc);color:#000;box-shadow:0 3px 12px rgba(0,212,255,.3);}
+.save-btn.cyan:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(0,212,255,.45);}
+.save-btn.blue{background:linear-gradient(135deg,#3366ff,#0044cc);color:#fff;box-shadow:0 3px 12px rgba(51,102,255,.3);}
+.save-btn.blue:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(51,102,255,.45);}
 .save-status{font-size:.76rem;color:var(--dim);margin-left:4px;}
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:#13131f;border:1px solid var(--green);color:var(--green);padding:10px 22px;border-radius:10px;font-weight:700;font-size:.85rem;opacity:0;transition:all .3s;z-index:9999;pointer-events:none;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -542,6 +546,8 @@ body.guest-mode .save-btn{
       <button class="save-btn green" onclick="saveLocal()">💾 Save to Local</button>
       <button class="save-btn gray"  onclick="loadLocal()">📂 Load Saved</button>
       <button class="save-btn red"   onclick="deleteLocal()">🗑 Delete Local Save</button>
+      <button class="save-btn cyan admin-only" onclick="saveToFirebase()">☁️ Save to Firebase</button>
+      <button class="save-btn blue admin-only" onclick="loadFromFirebase()">⬇️ Load from Firebase</button>
       <span class="save-status" id="saveStatus"></span>
     </div>
   </div>
